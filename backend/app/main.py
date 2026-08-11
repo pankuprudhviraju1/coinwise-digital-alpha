@@ -9,7 +9,7 @@ from .models import Redemption, Reward, Transaction, Wallet
 from .schemas import RedeemIn, TransactionOut
 
 app = FastAPI(title="Coinwise API")
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 @app.get("/api/transactions")
 def transactions(search: str | None = None, category: str | None = None, status: str | None = None,
