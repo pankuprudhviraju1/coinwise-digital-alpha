@@ -41,7 +41,8 @@ def spending(date_from: date | None = None, date_to: date | None = None, session
     if date_from: base.append(Transaction.occurred_on >= date_from)
     if date_to: base.append(Transaction.occurred_on <= date_to)
     by_category = session.execute(select(Transaction.category, func.sum(Transaction.amount)).where(*base).group_by(Transaction.category).order_by(func.sum(Transaction.amount).desc())).all()
-    by_month = session.execute(select(func.to_char(Transaction.occurred_on, "YYYY-MM"), func.sum(Transaction.amount)).where(*base).group_by(func.to_char(Transaction.occurred_on, "YYYY-MM")).order_by(func.to_char(Transaction.occurred_on, "YYYY-MM"))).all()
+    month = func.to_char(Transaction.occurred_on, "YYYY-MM").label("month")
+    by_month = session.execute(select(month, func.sum(Transaction.amount)).where(*base).group_by(month).order_by(month)).all()
     return {"categories": [{"label": a, "value": b} for a,b in by_category], "months": [{"label": a, "value": b} for a,b in by_month]}
 
 @app.get("/api/rewards/balance")
