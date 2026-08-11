@@ -23,7 +23,7 @@ Open `http://localhost:5173`. The frontend proxies `/api` to the API server.
 
 ## Notes
 
-The provided `transactions.json` was not available in the local workspace. The seeder accepts the original file unchanged when it is supplied, and otherwise creates a reproducible 10,000-row development fixture. See `ASSUMPTIONS.md`.
+The deployed instance is populated from the supplied `transactions.json`. The seed command also normalizes the source file's mixed ISO, Unix-millisecond and `DD/MM/YYYY` timestamp formats, status spelling, and blank categories. When no source file is supplied, it creates a reproducible 10,000-row development fixture.
 
 ## API
 
