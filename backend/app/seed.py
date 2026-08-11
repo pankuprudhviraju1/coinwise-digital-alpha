@@ -1,5 +1,5 @@
 import json, random, sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from sqlalchemy import select
@@ -11,8 +11,14 @@ REWARDS = [("₹100 Amazon voucher", "A digital voucher delivered instantly.", 8
 
 def normalize(row, i):
     merchant = row.get("merchant") or row.get("merchant_name") or f"Merchant {i}"
-    raw_date = row.get("date") or row.get("occurred_on") or date.today().isoformat()
-    return Transaction(merchant=merchant, category=row.get("category", "Other"), amount=Decimal(str(row.get("amount", 0))).copy_abs(), occurred_on=date.fromisoformat(str(raw_date)[:10]), status=str(row.get("status", "successful")).lower(), card_last4=str(row.get("card_last4", "4242"))[-4:], notes=row.get("notes"))
+    raw_date = row.get("timestamp") or row.get("date") or row.get("occurred_on") or date.today().isoformat()
+    if isinstance(raw_date, (int, float)): occurred_on = datetime.fromtimestamp(raw_date / 1000).date()
+    else:
+        try: occurred_on = datetime.fromisoformat(raw_date.replace("Z", "+00:00")).date()
+        except ValueError: occurred_on = datetime.strptime(raw_date, "%d/%m/%Y %H:%M:%S").date()
+    status = {"success": "successful", "pending": "pending", "failed": "failed"}.get(str(row.get("status", "successful")).lower(), "failed")
+    source_note = f"Source transaction: {row['id']} | {row.get('payment_method', 'Unknown')}" if row.get("id") else row.get("notes")
+    return Transaction(merchant=merchant, category=row.get("category") or "Uncategorized", amount=Decimal(str(row.get("amount", 0))).copy_abs(), occurred_on=occurred_on, status=status, card_last4=str(row.get("card_last4", "0000"))[-4:], notes=source_note)
 
 def generated():
     rng = random.Random(42); today = date.today()
